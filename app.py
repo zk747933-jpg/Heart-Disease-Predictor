@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import pickle
+import joblib   # pickle ke jagah joblib use karo
 
 # ---------------------------
 # Page Config
@@ -11,11 +11,11 @@ st.set_page_config(page_title="Heart Disease Predictor", page_icon="❤️")
 # Load Model Pipeline
 # ---------------------------
 try:
-    with open("heart-disease-model (2).pkl", "rb") as file:
-        data = pickle.load(file)
+    data = joblib.load("heart-disease-model (2).pkl")
 
-    model = data.get("model")
-    training_columns = data.get("columns", [])
+    model = data["model"]
+    scaler = data.get("scaler", None)   # agar scaler separately save kiya hai
+    training_columns = data["columns"]
 
     if model is None or not training_columns:
         st.error("❌ Model file is missing required keys (model, columns).")
@@ -78,11 +78,22 @@ input_dict = {
 input_df = pd.DataFrame([input_dict])
 
 # ---------------------------
+# Align Columns (if scaler used separately)
+# ---------------------------
+input_df = input_df.reindex(columns=training_columns, fill_value=0)
+
+# ---------------------------
 # Prediction
 # ---------------------------
 if st.button("Predict Heart Disease"):
     try:
-        prediction = model.predict(input_df)[0]
+        # agar scaler separately save kiya hai to use karo
+        if scaler is not None:
+            input_scaled = scaler.transform(input_df)
+            prediction = model.predict(input_scaled)[0]
+        else:
+            # agar pipeline save kiya hai to direct predict karo
+            prediction = model.predict(input_df)[0]
 
         if prediction == 1:
             st.error("⚠ High risk of heart disease detected")
