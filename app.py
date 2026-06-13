@@ -8,21 +8,17 @@ import pickle
 st.set_page_config(page_title="Heart Disease Predictor", page_icon="❤️")
 
 # ---------------------------
-# Load Model Safely
+# Load Model Pipeline
 # ---------------------------
 try:
-    with open("heart-disease-model (1).pkl", "rb") as file:
+    with open("heart-disease-model.pkl", "rb") as file:
         data = pickle.load(file)
 
     model = data.get("model")
-    scaler = data.get("scaler")
     training_columns = data.get("columns", [])
 
-    # remove target column if exists
-    training_columns = [col for col in training_columns if col != "HeartDisease"]
-
-    if model is None or scaler is None or not training_columns:
-        st.error("❌ Model file is missing required keys (model, scaler, columns).")
+    if model is None or not training_columns:
+        st.error("❌ Model file is missing required keys (model, columns).")
         st.stop()
 
 except Exception as e:
@@ -36,9 +32,6 @@ st.title("❤️ Heart Disease Predictor")
 st.write("Enter patient details to predict heart disease risk")
 st.markdown("---")
 
-# ---------------------------
-# Input Fields
-# ---------------------------
 col1, col2 = st.columns(2)
 
 with col1:
@@ -59,7 +52,7 @@ with col2:
     Thalassemia = st.selectbox("Thalassemia", [0, 1, 2, 3])
 
 # ---------------------------
-# Encoding
+# Encoding Gender
 # ---------------------------
 Gender = 1 if Gender == "Male" else 0
 
@@ -85,25 +78,11 @@ input_dict = {
 input_df = pd.DataFrame([input_dict])
 
 # ---------------------------
-# Align Columns (VERY IMPORTANT)
-# ---------------------------
-input_df = input_df.reindex(columns=training_columns, fill_value=0)
-
-# ---------------------------
-# Scale Input (IMPORTANT FIX)
-# ---------------------------
-try:
-    input_scaled = scaler.transform(input_df)
-except Exception as e:
-    st.error(f"❌ Scaling failed: {e}")
-    st.stop()
-
-# ---------------------------
 # Prediction
 # ---------------------------
 if st.button("Predict Heart Disease"):
     try:
-        prediction = model.predict(input_scaled)[0]
+        prediction = model.predict(input_df)[0]
 
         if prediction == 1:
             st.error("⚠ High risk of heart disease detected")
