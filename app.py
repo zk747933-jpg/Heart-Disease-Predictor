@@ -7,8 +7,12 @@ import joblib
 # ---------------------------
 st.set_page_config(page_title="Heart Disease Predictor", page_icon="❤️")
 
+st.title("❤️ Heart Disease Predictor")
+st.write("Enter patient details to predict heart disease risk")
+st.markdown("---")
+
 # ---------------------------
-# Load Model Pipeline
+# Load Model
 # ---------------------------
 try:
     data = joblib.load("heart-disease-model (4).pkl")
@@ -16,25 +20,18 @@ try:
     model = data["model"]
     training_columns = list(data["columns"])
 
-    if model is None or len(training_columns) == 0:
-        st.error("❌ Model file is missing required keys (model, columns).")
-        st.stop()
-
 except Exception as e:
     st.error(f"❌ Model loading failed: {e}")
     st.stop()
 
 # ---------------------------
-# UI
+# Input UI
 # ---------------------------
-st.title("❤️ Heart Disease Predictor")
-st.write("Enter patient details to predict heart disease risk")
-st.markdown("---")
-
 col1, col2 = st.columns(2)
 
 with col1:
     Age = st.number_input("Age", 20, 100, 45)
+
     Gender = st.selectbox("Gender", ["Male", "Female"])
     ChestPainType = st.selectbox("Chest Pain Type", [0, 1, 2, 3])
     RestingBP = st.number_input("Resting Blood Pressure", 80, 200, 120)
@@ -45,61 +42,67 @@ with col1:
 with col2:
     MaxHR = st.number_input("Max Heart Rate", 60, 220, 150)
     ExerciseAngina = st.selectbox("Exercise Angina", [0, 1])
-    Oldpeak = st.number_input("ST Depression (Oldpeak)", 0.0, 6.0, 1.0, 0.1)   # ✅ name fix
+    Oldpeak = st.number_input("ST Depression (Oldpeak)", 0.0, 6.0, 1.0, 0.1)
     ST_Slope = st.selectbox("ST Slope", [0, 1, 2])
     MajorVessels = st.selectbox("Major Vessels", [0, 1, 2, 3])
     Thalassemia = st.selectbox("Thalassemia", [0, 1, 2, 3])
 
 # ---------------------------
-# Encoding Gender
+# Encoding
 # ---------------------------
 Gender = 1 if Gender == "Male" else 0
 
 # ---------------------------
-# Create Input DataFrame
+# Create Input Dictionary
 # ---------------------------
 input_dict = {
     "Age": Age,
     "Gender": Gender,
     "ChestPainType": ChestPainType,
-    "RestingBP": RestingBP,        # ✅ spelling fix (was RestingBp)
+    "RestingBP": RestingBP,
     "Cholesterol": Cholesterol,
-    "FastingBS": FastingBS,        # ✅ spelling fix (was FastingBs)
+    "FastingBS": FastingBS,
     "RestingECG": RestingECG,
     "MaxHR": MaxHR,
     "ExerciseAngina": ExerciseAngina,
-    "Oldpeak": Oldpeak,            # ✅ renamed from ST_Depression
+    "Oldpeak": Oldpeak,
     "ST_Slope": ST_Slope,
     "MajorVessels": MajorVessels,
     "Thalassemia": Thalassemia
 }
 
-# ✅ Ensure column order matches training
-input_df = pd.DataFrame([input_dict], columns=training_columns)
+# ---------------------------
+# Safe DataFrame Creation (IMPORTANT FIX)
+# ---------------------------
+input_df = pd.DataFrame(0, index=[0], columns=training_columns)
+
+for col in input_dict:
+    if col in input_df.columns:
+        input_df[col] = input_dict[col]
 
 # ---------------------------
-# Prediction
+# Prediction Button
 # ---------------------------
 if st.button("Predict Heart Disease"):
+
     try:
         prediction = model.predict(input_df)[0]
 
-        # Debug Information
-        st.subheader("Debug Output")
-        st.write("Raw Prediction:", prediction)
+        st.subheader("Result")
 
-        if hasattr(model, "predict_proba"):
-            probability = model.predict_proba(input_df)
-            st.write("Probability:", probability)
-
-        st.write("Input Data:")
-        st.dataframe(input_df)
-
-        # Final Result
         if prediction == 1:
             st.error("⚠ High risk of heart disease detected")
         else:
             st.success("✅ No heart disease risk detected")
+
+        # Optional probability
+        if hasattr(model, "predict_proba"):
+            prob = model.predict_proba(input_df)[0]
+            st.write("Prediction Probability:", prob)
+
+        # Debug view
+        with st.expander("Show Input Data"):
+            st.dataframe(input_df)
 
     except Exception as e:
         st.error(f"❌ Prediction failed: {e}")
