@@ -18,7 +18,7 @@ try:
     data = joblib.load("heart-disease-model (4).pkl")
 
     model = data["model"]
-    training_columns = list(data["columns"])
+    training_columns = data["columns"]
 
 except Exception as e:
     st.error(f"❌ Model loading failed: {e}")
@@ -31,7 +31,6 @@ col1, col2 = st.columns(2)
 
 with col1:
     Age = st.number_input("Age", 20, 100, 45)
-
     Gender = st.selectbox("Gender", ["Male", "Female"])
     ChestPainType = st.selectbox("Chest Pain Type", [0, 1, 2, 3])
     RestingBP = st.number_input("Resting Blood Pressure", 80, 200, 120)
@@ -72,21 +71,22 @@ input_dict = {
 }
 
 # ---------------------------
-# Safe DataFrame Creation
-# ---------------------------
-input_df = pd.DataFrame(0, index=[0], columns=training_columns)
-
-for col in input_dict:
-    if col in input_df.columns:
-        input_df[col] = input_dict[col]
-
-# ---------------------------
-# Prediction
+# Prediction Section
 # ---------------------------
 if st.button("Predict Heart Disease"):
 
     try:
+        # Create DataFrame
+        input_df = pd.DataFrame([input_dict])
+
+        # Align with training columns (VERY IMPORTANT FIX)
+        input_df = input_df.reindex(columns=training_columns, fill_value=0)
+
+        # Prediction
         prediction = model.predict(input_df)[0]
+
+        # Output
+        st.subheader("Result")
 
         if prediction == 1:
             st.error("⚠ High risk of heart disease detected")
