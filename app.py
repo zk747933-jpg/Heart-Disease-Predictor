@@ -11,13 +11,13 @@ st.set_page_config(page_title="Heart Disease Predictor", page_icon="❤️")
 # Load Model Pipeline
 # ---------------------------
 try:
-    data = joblib.load("heart-disease-model (3).pkl")
+    data = joblib.load("heart-disease-model (3).pkl")   # apna naya pipeline file load karo
 
     model = data["model"]
-    scaler = data.get("scaler", None)   # agar scaler separately save kiya hai
-    training_columns = data["columns"]
+    training_columns = list(data["columns"])   # Index ko list mein convert kar lo
 
-    if model is None or not training_columns:
+    # FIX: avoid ambiguous truth value error
+    if model is None or len(training_columns) == 0:
         st.error("❌ Model file is missing required keys (model, columns).")
         st.stop()
 
@@ -78,22 +78,12 @@ input_dict = {
 input_df = pd.DataFrame([input_dict])
 
 # ---------------------------
-# Align Columns (if scaler used separately)
-# ---------------------------
-input_df = input_df.reindex(columns=training_columns, fill_value=0)
-
-# ---------------------------
 # Prediction
 # ---------------------------
 if st.button("Predict Heart Disease"):
     try:
-        # agar scaler separately save kiya hai to use karo
-        if scaler is not None:
-            input_scaled = scaler.transform(input_df)
-            prediction = model.predict(input_scaled)[0]
-        else:
-            # agar pipeline save kiya hai to direct predict karo
-            prediction = model.predict(input_df)[0]
+        # Pipeline khud preprocessing karega
+        prediction = model.predict(input_df)[0]
 
         if prediction == 1:
             st.error("⚠ High risk of heart disease detected")
