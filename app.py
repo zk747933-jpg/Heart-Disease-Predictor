@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import joblib   # pickle ke jagah joblib use karo
+import joblib
 
 # ---------------------------
 # Page Config
@@ -11,12 +11,11 @@ st.set_page_config(page_title="Heart Disease Predictor", page_icon="❤️")
 # Load Model Pipeline
 # ---------------------------
 try:
-    data = joblib.load("heart-disease-model (3).pkl")   # apna naya pipeline file load karo
+    data = joblib.load("heart-disease-model (3).pkl")
 
     model = data["model"]
-    training_columns = list(data["columns"])   # Index ko list mein convert kar lo
+    training_columns = list(data["columns"])
 
-    # FIX: avoid ambiguous truth value error
     if model is None or len(training_columns) == 0:
         st.error("❌ Model file is missing required keys (model, columns).")
         st.stop()
@@ -82,9 +81,20 @@ input_df = pd.DataFrame([input_dict])
 # ---------------------------
 if st.button("Predict Heart Disease"):
     try:
-        # Pipeline khud preprocessing karega
         prediction = model.predict(input_df)[0]
 
+        # Debug Information
+        st.subheader("Debug Output")
+        st.write("Raw Prediction:", prediction)
+
+        if hasattr(model, "predict_proba"):
+            probability = model.predict_proba(input_df)
+            st.write("Probability:", probability)
+
+        st.write("Input Data:")
+        st.dataframe(input_df)
+
+        # Final Result
         if prediction == 1:
             st.error("⚠ High risk of heart disease detected")
         else:
