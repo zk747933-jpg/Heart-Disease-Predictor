@@ -37,15 +37,15 @@ with col1:
     Age = st.number_input("Age", 20, 100, 45)
     Gender = st.selectbox("Gender", ["Male", "Female"])
     ChestPainType = st.selectbox("Chest Pain Type", [0, 1, 2, 3])
-    RestingBp = st.number_input("Resting Blood Pressure", 80, 200, 120)
+    RestingBP = st.number_input("Resting Blood Pressure", 80, 200, 120)
     Cholesterol = st.number_input("Cholesterol", 100, 600, 200)
-    FastingBs = st.selectbox("Fasting Blood Sugar", [0, 1])
+    FastingBS = st.selectbox("Fasting Blood Sugar", [0, 1])
     RestingECG = st.selectbox("Resting ECG", [0, 1, 2])
 
 with col2:
     MaxHR = st.number_input("Max Heart Rate", 60, 220, 150)
     ExerciseAngina = st.selectbox("Exercise Angina", [0, 1])
-    ST_Depression = st.number_input("ST Depression", 0.0, 6.0, 1.0, 0.1)
+    Oldpeak = st.number_input("ST Depression (Oldpeak)", 0.0, 6.0, 1.0, 0.1)   # ✅ name fix
     ST_Slope = st.selectbox("ST Slope", [0, 1, 2])
     MajorVessels = st.selectbox("Major Vessels", [0, 1, 2, 3])
     Thalassemia = st.selectbox("Thalassemia", [0, 1, 2, 3])
@@ -62,19 +62,20 @@ input_dict = {
     "Age": Age,
     "Gender": Gender,
     "ChestPainType": ChestPainType,
-    "RestingBp": RestingBp,
+    "RestingBP": RestingBP,        # ✅ spelling fix (was RestingBp)
     "Cholesterol": Cholesterol,
-    "FastingBs": FastingBs,
+    "FastingBS": FastingBS,        # ✅ spelling fix (was FastingBs)
     "RestingECG": RestingECG,
     "MaxHR": MaxHR,
     "ExerciseAngina": ExerciseAngina,
-    "ST_Depression": ST_Depression,
+    "Oldpeak": Oldpeak,            # ✅ renamed from ST_Depression
     "ST_Slope": ST_Slope,
     "MajorVessels": MajorVessels,
     "Thalassemia": Thalassemia
 }
 
-input_df = pd.DataFrame([input_dict])
+# ✅ Ensure column order matches training
+input_df = pd.DataFrame([input_dict], columns=training_columns)
 
 # ---------------------------
 # Prediction
