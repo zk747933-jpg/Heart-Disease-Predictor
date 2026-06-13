@@ -11,7 +11,7 @@ st.set_page_config(page_title="Heart Disease Predictor", page_icon="❤️")
 # Load Model Pipeline
 # ---------------------------
 try:
-    with open("heart-disease-model.pkl", "rb") as file:
+    with open("heart-disease-model (1).pkl", "rb") as file:
         data = pickle.load(file)
 
     model = data.get("model")
