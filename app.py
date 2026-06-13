@@ -11,7 +11,7 @@ st.set_page_config(page_title="Heart Disease Predictor", page_icon="❤️")
 # Load Model Pipeline
 # ---------------------------
 try:
-    data = joblib.load("heart-disease-model (3).pkl")
+    data = joblib.load("heart-disease-model (4).pkl")
 
     model = data["model"]
     training_columns = list(data["columns"])
