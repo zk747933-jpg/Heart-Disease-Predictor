@@ -53,7 +53,7 @@ with col2:
 Gender = 1 if Gender == "Male" else 0
 
 # ---------------------------
-# Create Input Dictionary
+# Input Dictionary
 # ---------------------------
 input_dict = {
     "Age": Age,
@@ -72,7 +72,7 @@ input_dict = {
 }
 
 # ---------------------------
-# Safe DataFrame Creation (IMPORTANT FIX)
+# Safe DataFrame Creation
 # ---------------------------
 input_df = pd.DataFrame(0, index=[0], columns=training_columns)
 
@@ -81,28 +81,17 @@ for col in input_dict:
         input_df[col] = input_dict[col]
 
 # ---------------------------
-# Prediction Button
+# Prediction
 # ---------------------------
 if st.button("Predict Heart Disease"):
 
     try:
         prediction = model.predict(input_df)[0]
 
-        st.subheader("Result")
-
         if prediction == 1:
             st.error("⚠ High risk of heart disease detected")
         else:
             st.success("✅ No heart disease risk detected")
-
-        # Optional probability
-        if hasattr(model, "predict_proba"):
-            prob = model.predict_proba(input_df)[0]
-            st.write("Prediction Probability:", prob)
-
-        # Debug view
-        with st.expander("Show Input Data"):
-            st.dataframe(input_df)
 
     except Exception as e:
         st.error(f"❌ Prediction failed: {e}")
