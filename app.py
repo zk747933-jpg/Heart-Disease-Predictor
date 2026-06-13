@@ -3,22 +3,40 @@ import pandas as pd
 import pickle
 
 # ---------------------------
-# Load model
+# Page Config
 # ---------------------------
-with open('heart-disease-model.pkl', 'rb') as file:
-    model, scaler = pickle.load(file)   # scaler load ho raha hai, use nahi karenge
+st.set_page_config(page_title="Heart Disease Predictor")
+
+# ---------------------------
+# Load Model Safely
+# ---------------------------
+try:
+    with open("heart-disease-model.pkl", "rb") as file:
+        data = pickle.load(file)
+
+    model = data["model"]
+    scaler = data["scaler"]
+    training_columns = data["columns"]
+
+    # Remove target column if present
+    training_columns = [
+        col for col in training_columns
+        if col != "HeartDisease"
+    ]
+
+except Exception as e:
+    st.error(f"❌ Model loading failed: {e}")
+    st.stop()
 
 # ---------------------------
 # UI
 # ---------------------------
-st.set_page_config(page_title="Heart Disease Predictor")
-
 st.title("❤️ Heart Disease Predictor")
 st.write("Predict heart disease risk based on patient data")
 st.markdown("---")
 
 # ---------------------------
-# Input fields
+# Input Fields
 # ---------------------------
 col1, col2 = st.columns(2)
 
@@ -34,7 +52,13 @@ with col2:
     RestingECG = st.selectbox("Resting ECG", [0, 1, 2])
     MaxHR = st.number_input("Max Heart Rate", 60, 220, 150)
     ExerciseAngina = st.selectbox("Exercise Angina", [0, 1])
-    ST_Depression = st.number_input("ST Depression", 0.0, 6.0, 1.0, step=0.1)
+    ST_Depression = st.number_input(
+        "ST Depression",
+        min_value=0.0,
+        max_value=6.0,
+        value=1.0,
+        step=0.1
+    )
     ST_Slope = st.selectbox("ST Slope", [0, 1, 2])
     MajorVessels = st.selectbox("Major Vessels", [0, 1, 2, 3])
     Thalassemia = st.selectbox("Thalassemia", [0, 1, 2, 3])
@@ -45,22 +69,22 @@ with col2:
 Gender = 1 if Gender == "Male" else 0
 
 # ---------------------------
-# Create dataframe
+# Create DataFrame
 # ---------------------------
 input_dict = {
-    'Age': Age,
-    'Gender': Gender,
-    'ChestPainType': ChestPainType,
-    'RestingBp': RestingBp,
-    'Cholesterol': Cholesterol,
-    'FastingBS': FastingBS,
-    'RestingECG': RestingECG,
-    'MaxHR': MaxHR,
-    'ExerciseAngina': ExerciseAngina,
-    'ST_Depression': ST_Depression,
-    'ST_Slope': ST_Slope,
-    'MajorVessels': MajorVessels,
-    'Thalassemia': Thalassemia
+    "Age": Age,
+    "Gender": Gender,
+    "ChestPainType": ChestPainType,
+    "RestingBp": RestingBp,
+    "Cholesterol": Cholesterol,
+    "FastingBS": FastingBS,
+    "RestingECG": RestingECG,
+    "MaxHR": MaxHR,
+    "ExerciseAngina": ExerciseAngina,
+    "ST_Depression": ST_Depression,
+    "ST_Slope": ST_Slope,
+    "MajorVessels": MajorVessels,
+    "Thalassemia": Thalassemia
 }
 
 input_df = pd.DataFrame([input_dict])
@@ -71,10 +95,8 @@ input_df = pd.DataFrame([input_dict])
 input_encoded = pd.get_dummies(input_df)
 
 # ---------------------------
-# Match training columns
+# Align Columns
 # ---------------------------
-training_columns = model.feature_names_in_
-
 input_encoded = input_encoded.reindex(
     columns=training_columns,
     fill_value=0
@@ -84,13 +106,13 @@ input_encoded = input_encoded.reindex(
 # Prediction
 # ---------------------------
 if st.button("Predict Heart Disease"):
+    try:
+        prediction = model.predict(input_encoded)[0]
 
-    prediction = model.predict(input_encoded)[0]
-    probability = model.predict_proba(input_encoded)[0]
+        if prediction == 1:
+            st.error("⚠ High risk of heart disease")
+        else:
+            st.success("✅ No heart disease risk detected")
 
-    if prediction == 1:
-        st.error("⚠ High risk of heart disease")
-        st.write(f"Risk Score: {probability[1]*100:.2f}%")
-    else:
-        st.success("✅ No heart disease risk detected")
-        st.write(f"Healthy Score: {probability[0]*100:.2f}%")
+    except Exception as e:
+        st.error(f"Prediction failed: {e}")
