@@ -15,7 +15,7 @@ st.markdown("---")
 # Load Model
 # ---------------------------
 try:
-    data = joblib.load("heart-disease-model (4).pkl")
+    data = joblib.load("heart-disease-model (5).pkl")
 
     model = data["model"]
     training_columns = data["columns"]
