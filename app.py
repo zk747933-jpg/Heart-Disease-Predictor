@@ -15,7 +15,7 @@ st.markdown("---")
 # Load Model
 # ---------------------------
 try:
-    model = joblib.load("heart-disease-model (5).pkl")
+    model = joblib.load("heart-disease-model (6).pkl")
 
 except Exception as e:
     st.error(f"❌ Model loading failed: {e}")
