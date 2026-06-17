@@ -13,15 +13,16 @@ st.write("Enter patient details to predict heart disease risk")
 st.markdown("---")
 
 # ---------------------------
-# Load Model Safely
+# Load Model (FIXED)
 # ---------------------------
-MODEL_PATH = "heart_model.pkl"   # 👈 keep file name simple
+MODEL_PATH = "heart_model.pkl"
 
 if not os.path.exists(MODEL_PATH):
-    st.error("❌ Model file not found. Please upload 'heart_model.pkl' in repo.")
+    st.error("❌ Model file not found in project folder")
     st.stop()
 
-model = joblib.load(MODEL_PATH)
+data = joblib.load(MODEL_PATH)
+model = data["model"]   # 🔥 IMPORTANT FIX
 
 # ---------------------------
 # Input UI
@@ -57,7 +58,7 @@ ExerciseAngina = 1 if ExerciseAngina == "Yes" else 0
 if st.button("Predict Heart Disease"):
 
     try:
-        input_data = pd.DataFrame([{
+        input_df = pd.DataFrame([{
             "Age": Age,
             "Gender": Gender,
             "ChestPainType": ChestPainType,
@@ -73,7 +74,7 @@ if st.button("Predict Heart Disease"):
             "Thalassemia": Thalassemia
         }])
 
-        prediction = model.predict(input_data)[0]
+        prediction = model.predict(input_df)[0]
 
         st.subheader("Result")
 
