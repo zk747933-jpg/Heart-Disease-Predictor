@@ -15,10 +15,7 @@ st.markdown("---")
 # Load Model
 # ---------------------------
 try:
-    data = joblib.load("heart-disease-model (5).pkl")
-
-    model = data["model"]
-    training_columns = data["columns"]
+    model = joblib.load("heart-disease-model (5).pkl")
 
 except Exception as e:
     st.error(f"❌ Model loading failed: {e}")
@@ -41,7 +38,7 @@ with col1:
 with col2:
     MaxHR = st.number_input("Max Heart Rate", 60, 220, 150)
     ExerciseAngina = st.selectbox("Exercise Angina", [0, 1])
-    Oldpeak = st.number_input("ST Depression (Oldpeak)", 0.0, 6.0, 1.0, 0.1)
+    Oldpeak = st.number_input("ST Depression", 0.0, 6.0, 1.0, 0.1)
     ST_Slope = st.selectbox("ST Slope", [0, 1, 2])
     MajorVessels = st.selectbox("Major Vessels", [0, 1, 2, 3])
     Thalassemia = st.selectbox("Thalassemia", [0, 1, 2, 3])
@@ -52,46 +49,38 @@ with col2:
 Gender = 1 if Gender == "Male" else 0
 
 # ---------------------------
-# Input Dictionary
-# ---------------------------
-input_dict = {
-    "Age": Age,
-    "Gender": Gender,
-    "ChestPainType": ChestPainType,
-    "RestingBP": RestingBP,
-    "Cholesterol": Cholesterol,
-    "FastingBS": FastingBS,
-    "RestingECG": RestingECG,
-    "MaxHR": MaxHR,
-    "ExerciseAngina": ExerciseAngina,
-    "Oldpeak": Oldpeak,
-    "ST_Slope": ST_Slope,
-    "MajorVessels": MajorVessels,
-    "Thalassemia": Thalassemia
-}
-
-# ---------------------------
-# Prediction Section
+# Prediction
 # ---------------------------
 if st.button("Predict Heart Disease"):
 
     try:
-        # Create DataFrame
+
+        input_dict = {
+            "Age": Age,
+            "RestingBp": RestingBP,
+            "Cholesterol": Cholesterol,
+            "MaxHR": MaxHR,
+            "ST_Depression": Oldpeak,
+            "MajorVessels": MajorVessels,
+            "Gender": Gender,
+            "FastingBs": FastingBS,
+            "ChestPainType": ChestPainType,
+            "RestingECG": RestingECG,
+            "ExerciseAngina": ExerciseAngina,
+            "ST_Slope": ST_Slope,
+            "Thalassemia": Thalassemia
+        }
+
         input_df = pd.DataFrame([input_dict])
 
-        # Align with training columns (VERY IMPORTANT FIX)
-        input_df = input_df.reindex(columns=training_columns, fill_value=0)
-
-        # Prediction
         prediction = model.predict(input_df)[0]
 
-        # Output
         st.subheader("Result")
 
         if prediction == 1:
-            st.error("⚠ High risk of heart disease detected")
+            st.error("⚠ High Risk of Heart Disease Detected")
         else:
-            st.success("✅ No heart disease risk detected")
+            st.success("✅ No Heart Disease Risk Detected")
 
     except Exception as e:
         st.error(f"❌ Prediction failed: {e}")
